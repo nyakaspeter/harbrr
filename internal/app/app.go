@@ -441,14 +441,27 @@ func (a *App) Handler() http.Handler { return a.server.Handler() }
 // in-flight notification dispatches drain, then the database closes last. The
 // reapers write to the DB on shutdown (the search cache flushes its buffered
 // touches and stat counters); closing the database first would race or lose
-// that flush. bgCancel also unblocks the reapers if serveUntilDone returns
-// early on a listen error (ctx not yet cancelled), so bg.Wait can't hang.
+// that flush. bgCancel also unblocks the reapers if serving returns early on a
+// listener error (ctx not yet cancelled), so bg.Wait can't hang.
 func (a *App) Run(ctx context.Context) error {
+	var lc net.ListenConfig
+	addr := listenAddr(a.cfg)
+	ln, err := lc.Listen(ctx, "tcp", addr)
+	if err != nil {
+		return fmt.Errorf("serve: listen %s: %w", addr, err)
+	}
+	return a.RunListener(ctx, ln)
+}
+
+// RunListener serves on a listener opened by the caller. It exists for the
+// public embedded runtime, which must reserve the port before constructing the
+// application so Start can report bind failures synchronously.
+func (a *App) RunListener(ctx context.Context, ln net.Listener) error {
 	bgCtx, bgCancel := context.WithCancel(ctx)
 	var bg sync.WaitGroup
 	startReapers(bgCtx, &bg, a.db, a.sessionStore, a.searchCache, a.registry, a.auth, a.expiry, a.log)
 
-	runErr := a.serveUntilDone(ctx)
+	runErr := a.serveListenerUntilDone(ctx, ln)
 
 	bgCancel()
 	bg.Wait()
@@ -460,19 +473,9 @@ func (a *App) Run(ctx context.Context) error {
 	return runErr
 }
 
-// serveUntilDone binds the listener, logs startup, then serves until ctx is
+// serveListenerUntilDone logs startup, then serves on ln until ctx is
 // cancelled or a fatal serve error occurs.
-func (a *App) serveUntilDone(ctx context.Context) error {
-	// Bound synchronously, before logging "listening", so an in-use port fails loud
-	// here instead of surfacing after we have already told the operator the server
-	// was up. The same listener is then served — nothing releases and re-binds it, so
-	// there is no window for another process to steal the port in between.
-	var lc net.ListenConfig
-	addr := listenAddr(a.cfg)
-	ln, err := lc.Listen(ctx, "tcp", addr)
-	if err != nil {
-		return fmt.Errorf("serve: listen %s: %w", addr, err)
-	}
+func (a *App) serveListenerUntilDone(ctx context.Context, ln net.Listener) error {
 	logStartup(a.log, a.cfg, a.keyring)
 	// Serve closes ln via http.Server.Shutdown on the way out.
 	if err := a.server.Serve(ctx, ln); err != nil {

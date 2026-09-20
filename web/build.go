@@ -1,7 +1,6 @@
 // Package web embeds the built single-page management UI (the Vite bundle in
-// dist/) into the harbrr binary. dist/.gitkeep is committed so `go build`
-// always succeeds without a frontend build; a gitkeep-only dist makes the ui
-// handler answer "frontend not built" (internal/web/ui).
+// dist/) into the harbrr binary. The production bundle is committed so Go
+// applications embedding harbrr do not need Bun in their own build pipeline.
 package web
 
 import (

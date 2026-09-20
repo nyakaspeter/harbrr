@@ -142,6 +142,10 @@ internal/
   smoke/                 # live differential smoke harness (build-tagged, manual-only)
 ```
 
+`pkg/embedded` is the one intentional public package. It provides the typed
+lifecycle boundary used when harbrr runs inside another Go application; product
+subsystems remain internal and are still assembled only by `internal/app`.
+
 ## Boundaries with the family
 
 - **autobrr** consumes harbrr's Torznab/Newznab feeds as a drop-in for Prowlarr. Beyond the feed,

@@ -23,9 +23,20 @@ import (
 // permissive makes the global level the single dial; a per-logger level would pin a
 // floor the global knob could not lower, defeating a live "turn on debug" change.
 func New(cfg config.LogConfig, w io.Writer) zerolog.Logger {
+	return newLogger(cfg, w, false)
+}
+
+// NewNoColor builds a logger whose console output contains no ANSI color
+// escapes. Embedded hosts use it when logs are displayed in a web view rather
+// than written to an interactive terminal.
+func NewNoColor(cfg config.LogConfig, w io.Writer) zerolog.Logger {
+	return newLogger(cfg, w, true)
+}
+
+func newLogger(cfg config.LogConfig, w io.Writer, noColor bool) zerolog.Logger {
 	out := w
 	if cfg.Format == "console" {
-		out = zerolog.ConsoleWriter{Out: w, TimeFormat: time.RFC3339}
+		out = zerolog.ConsoleWriter{Out: w, TimeFormat: time.RFC3339, NoColor: noColor}
 	}
 	return zerolog.New(out).Level(zerolog.TraceLevel).With().Timestamp().Logger()
 }
