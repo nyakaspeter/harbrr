@@ -51,7 +51,7 @@ func Start(parent context.Context, options Options) (*Server, error) {
 		return nil, fmt.Errorf("embedded harbrr: listen %s: %w", address, err)
 	}
 
-	log := logger.New(cfg.Log, output)
+	log := logger.NewNoColor(cfg.Log, output)
 	if err := logger.SetLevel(cfg.Log.Level); err != nil {
 		_ = listener.Close()
 		return nil, fmt.Errorf("embedded harbrr: %w", err)
