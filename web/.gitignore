@@ -1,5 +1,5 @@
 node_modules/
-dist/*
-!dist/.gitkeep
+# Keep the production bundle in source control so downstream Go modules that
+# embed harbrr receive a working web UI without requiring Bun during their build.
 coverage/
 .eslintcache
