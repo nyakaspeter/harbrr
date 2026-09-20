@@ -27,7 +27,7 @@
 
 services:
   harbrr:
-    image: ghcr.io/autobrr/harbrr:latest
+    image: ghcr.io/nyakaspeter/harbrr:latest
     # build: . # alternative to `image:` — build from the local checkout
     container_name: harbrr
     restart: unless-stopped

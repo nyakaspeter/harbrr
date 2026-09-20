@@ -109,7 +109,7 @@ for the full walkthrough.
 # docker-compose.yml — a ready-to-edit docker-compose.example.yml ships in the repo
 services:
   harbrr:
-    image: ghcr.io/autobrr/harbrr:latest
+    image: ghcr.io/nyakaspeter/harbrr:latest
     container_name: harbrr
     restart: unless-stopped
     # Run as the uid:gid that owns ./config so the bind mount is writable.
@@ -136,12 +136,12 @@ docker run -d \
   -p 7478:7478 \
   --user 1000:1000 \
   -v "$(pwd)/config:/config" \
-  ghcr.io/autobrr/harbrr:latest
+  ghcr.io/nyakaspeter/harbrr:latest
 ```
 
 The image runs non-root, exposes port 7478, ships a `/healthz` check, and already invokes
-`harbrr serve --host 0.0.0.0 --data-dir /config`. `:latest` follows the newest release; pin a
-version tag (e.g. `ghcr.io/autobrr/harbrr:0.2.0-alpha`, no `v` prefix) if you'd rather update
+`harbrr serve --host 0.0.0.0 --data-dir /config`. `:latest` follows the fork's `main` branch; pin a
+commit tag (e.g. `ghcr.io/nyakaspeter/harbrr:sha-abcdef0`) if you'd rather update
 deliberately.
 
 ### Linux / macOS / Windows / FreeBSD (prebuilt binary)
